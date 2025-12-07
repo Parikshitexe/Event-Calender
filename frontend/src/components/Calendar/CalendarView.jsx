@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
@@ -46,43 +46,75 @@ const CalendarView = () => {
   };
 
   /**
+   * Update date display - can be called manually or by event listener
+   */
+  const updateCurrentDate = useCallback(() => {
+    const calendarApi = calendarRef.current?.getApi();
+    if (calendarApi && calendarApi.view) {
+      const view = calendarApi.view;
+      setCurrentDate(view.title);
+    }
+  }, []);
+
+  /**
    * Update current date display when calendar view changes
    */
   useEffect(() => {
-    const updateDate = () => {
+    // Initial update after calendar renders
+    const timer = setTimeout(() => {
+      updateCurrentDate();
+      
+      // Set up listener after calendar is ready
       const calendarApi = calendarRef.current?.getApi();
       if (calendarApi) {
-        const view = calendarApi.view;
-        setCurrentDate(view.title);
+        // Remove any existing listener first to avoid duplicates
+        calendarApi.off('datesSet', updateCurrentDate);
+        // Add listener for view changes
+        calendarApi.on('datesSet', updateCurrentDate);
+      }
+    }, 150);
+
+    return () => {
+      clearTimeout(timer);
+      const calendarApi = calendarRef.current?.getApi();
+      if (calendarApi) {
+        calendarApi.off('datesSet', updateCurrentDate);
       }
     };
+  }, [updateCurrentDate]);
 
-    // Update on mount
-    updateDate();
-
-    // Listen for view changes
-    const calendarApi = calendarRef.current?.getApi();
-    if (calendarApi) {
-      calendarApi.on('datesSet', updateDate);
-      return () => {
-        calendarApi.off('datesSet', updateDate);
-      };
-    }
-  }, []);
+  /**
+   * Format time for event display
+   * Returns formatted time string or empty for all-day events
+   */
+  const formatEventTime = (startDate, allDay) => {
+    if (allDay) return '';
+    const date = new Date(startDate);
+    return date.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    });
+  };
 
   /**
    * Transform backend events to FullCalendar format
    * FullCalendar expects events with id, title, start, end, allDay properties
    */
-  const calendarEvents = events.map((event) => ({
-    id: event._id,
-    title: event.title,
-    start: event.start,
-    end: event.end,
-    allDay: event.allDay,
-    backgroundColor: event.allDay ? '#3b82f6' : '#10b981',
-    borderColor: event.allDay ? '#2563eb' : '#059669',
-  }));
+  const calendarEvents = events.map((event) => {
+    const timeStr = formatEventTime(event.start, event.allDay);
+    const displayTitle = timeStr ? `${timeStr} ${event.title}` : event.title;
+    
+    return {
+      id: event._id,
+      title: displayTitle,
+      start: event.start,
+      end: event.end,
+      allDay: event.allDay,
+      backgroundColor: event.allDay ? '#3b82f6' : '#10b981',
+      borderColor: event.allDay ? '#2563eb' : '#059669',
+    };
+  });
 
   /**
    * Handle Add Event button click
@@ -102,11 +134,12 @@ const CalendarView = () => {
   return (
     <>
       <div className="bg-white rounded-lg shadow-md p-6">
-        <CalendarToolbar 
-          calendarRef={calendarRef} 
-          currentDate={currentDate}
-          onAddEvent={handleAddEvent}
-        />
+      <CalendarToolbar 
+        calendarRef={calendarRef} 
+        currentDate={currentDate}
+        onAddEvent={handleAddEvent}
+        onDateUpdate={updateCurrentDate}
+      />
         <FullCalendar
           ref={calendarRef}
           plugins={[dayGridPlugin, interactionPlugin]}
@@ -120,6 +153,7 @@ const CalendarView = () => {
           selectable={false}
           dayMaxEvents={true}
           moreLinkClick="popover"
+          displayEventTime={false}
         />
       </div>
       

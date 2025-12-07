@@ -5,8 +5,9 @@
  * @param {Object} props.calendarRef - Reference to FullCalendar instance
  * @param {string} props.currentDate - Current month/year string to display
  * @param {Function} props.onAddEvent - Callback for Add Event button
+ * @param {Function} props.onDateUpdate - Callback to manually trigger date update
  */
-const CalendarToolbar = ({ calendarRef, currentDate, onAddEvent }) => {
+const CalendarToolbar = ({ calendarRef, currentDate, onAddEvent, onDateUpdate }) => {
   /**
    * Navigate to previous month
    */
@@ -14,6 +15,10 @@ const CalendarToolbar = ({ calendarRef, currentDate, onAddEvent }) => {
     const calendarApi = calendarRef.current?.getApi();
     if (calendarApi) {
       calendarApi.prev();
+      // Manually trigger date update after navigation
+      setTimeout(() => {
+        if (onDateUpdate) onDateUpdate();
+      }, 50);
     }
   };
 
@@ -24,6 +29,10 @@ const CalendarToolbar = ({ calendarRef, currentDate, onAddEvent }) => {
     const calendarApi = calendarRef.current?.getApi();
     if (calendarApi) {
       calendarApi.next();
+      // Manually trigger date update after navigation
+      setTimeout(() => {
+        if (onDateUpdate) onDateUpdate();
+      }, 50);
     }
   };
 
@@ -34,6 +43,10 @@ const CalendarToolbar = ({ calendarRef, currentDate, onAddEvent }) => {
     const calendarApi = calendarRef.current?.getApi();
     if (calendarApi) {
       calendarApi.today();
+      // Manually trigger date update after navigation
+      setTimeout(() => {
+        if (onDateUpdate) onDateUpdate();
+      }, 50);
     }
   };
 
@@ -59,7 +72,7 @@ const CalendarToolbar = ({ calendarRef, currentDate, onAddEvent }) => {
           Next
         </button>
         <span className="ml-4 text-lg font-semibold text-gray-700">
-          {currentDate || 'Loading...'}
+          {currentDate || ''}
         </span>
       </div>
       <div>
