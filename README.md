@@ -1,12 +1,11 @@
-# Event Calendar - Full Stack Application
-
+# Event Calendar
 A full-stack event calendar application built with React, Node.js, Express, and MongoDB.
 
 ## Project Structure
 
 ```
 Event-Calendar/
-├── frontend/          # React + Vite + TailwindCSS (to be added)
+├── frontend/          # React + Vite + TailwindCSS
 └── backend/          # Node.js + Express + MongoDB
 ```
 
