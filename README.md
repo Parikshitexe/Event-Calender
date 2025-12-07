@@ -61,3 +61,15 @@ npm start
 
 Server will run on `http://localhost:5000`
 
+**What the App Does**
+
+- Shows a monthly calendar using FullCalendar
+
+- Lets users create, edit, and delete events
+
+- Supports all-day and timed events
+
+- Clicking a date instantly opens the event form
+
+- Events update without reloading the page
+
