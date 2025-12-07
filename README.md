@@ -17,7 +17,7 @@ Event-Calendar/
 - **Database**: MongoDB Atlas
 - **ODM**: Mongoose
 
-### Frontend (Phase 2)
+### Frontend 
 - **Framework**: React (Vite)
 - **Styling**: TailwindCSS
 - **Calendar**: FullCalendar
