@@ -22,6 +22,10 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.get('/', (req, res) => {
+  res.send('Event Calendar Backend is running 🚀');
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({
