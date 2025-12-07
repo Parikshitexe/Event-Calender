@@ -5,6 +5,7 @@ import interactionPlugin from '@fullcalendar/interaction';
 import { useEvents } from '../../hooks/useEvents';
 import { useModal } from '../../hooks/useModal';
 import CalendarToolbar from './CalendarToolbar';
+import EventFormModal from '../EventForm/EventFormModal';
 
 /**
  * Main calendar view component
@@ -13,8 +14,16 @@ import CalendarToolbar from './CalendarToolbar';
 const CalendarView = () => {
   const calendarRef = useRef(null);
   const [currentDate, setCurrentDate] = useState('');
-  const { events, loading } = useEvents();
-  const { openCreateModal, openEditModal } = useModal();
+  const { events, loading, createEvent, updateEvent } = useEvents();
+  const { 
+    isOpen, 
+    mode, 
+    eventData, 
+    selectedDate, 
+    openCreateModal, 
+    openEditModal, 
+    closeModal 
+  } = useModal();
 
   /**
    * Handle date click - opens create event modal with selected date
@@ -91,27 +100,40 @@ const CalendarView = () => {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <CalendarToolbar 
-        calendarRef={calendarRef} 
-        currentDate={currentDate}
-        onAddEvent={handleAddEvent}
+    <>
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <CalendarToolbar 
+          calendarRef={calendarRef} 
+          currentDate={currentDate}
+          onAddEvent={handleAddEvent}
+        />
+        <FullCalendar
+          ref={calendarRef}
+          plugins={[dayGridPlugin, interactionPlugin]}
+          initialView="dayGridMonth"
+          headerToolbar={false} // We're using custom toolbar
+          events={calendarEvents}
+          dateClick={handleDateClick}
+          eventClick={handleEventClick}
+          height="auto"
+          editable={false}
+          selectable={false}
+          dayMaxEvents={true}
+          moreLinkClick="popover"
+        />
+      </div>
+      
+      {/* Event Form Modal */}
+      <EventFormModal
+        isOpen={isOpen}
+        mode={mode}
+        eventData={eventData}
+        selectedDate={selectedDate}
+        onClose={closeModal}
+        createEvent={createEvent}
+        updateEvent={updateEvent}
       />
-      <FullCalendar
-        ref={calendarRef}
-        plugins={[dayGridPlugin, interactionPlugin]}
-        initialView="dayGridMonth"
-        headerToolbar={false} // We're using custom toolbar
-        events={calendarEvents}
-        dateClick={handleDateClick}
-        eventClick={handleEventClick}
-        height="auto"
-        editable={false}
-        selectable={false}
-        dayMaxEvents={true}
-        moreLinkClick="popover"
-      />
-    </div>
+    </>
   );
 };
 
