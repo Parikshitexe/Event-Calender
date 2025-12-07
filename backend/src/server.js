@@ -42,8 +42,11 @@ app.use(errorHandler);
 
 // Start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+const HOST = process.env.HOST || '0.0.0.0'; // Listen on all interfaces for production
+
+app.listen(PORT, HOST, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📡 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🌐 Server accessible at http://${HOST}:${PORT}`);
 });
 
