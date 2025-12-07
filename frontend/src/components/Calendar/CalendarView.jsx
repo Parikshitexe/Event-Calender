@@ -14,7 +14,7 @@ import EventFormModal from '../EventForm/EventFormModal';
 const CalendarView = () => {
   const calendarRef = useRef(null);
   const [currentDate, setCurrentDate] = useState('');
-  const { events, loading, createEvent, updateEvent } = useEvents();
+  const { events, loading, error, createEvent, updateEvent, deleteEvent } = useEvents();
   const { 
     isOpen, 
     mode, 
@@ -125,36 +125,89 @@ const CalendarView = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-96">
+      <div className="flex flex-col items-center justify-center h-96 bg-white rounded-lg shadow-md">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
         <div className="text-gray-500">Loading calendar...</div>
+      </div>
+    );
+  }
+
+  if (error && events.length === 0) {
+    return (
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="flex flex-col items-center justify-center h-96">
+          <svg
+            className="w-16 h-16 text-red-500 mb-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">Error Loading Events</h3>
+          <p className="text-gray-600 text-center mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            Retry
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
     <>
-      <div className="bg-white rounded-lg shadow-md p-6">
-      <CalendarToolbar 
-        calendarRef={calendarRef} 
-        currentDate={currentDate}
-        onAddEvent={handleAddEvent}
-        onDateUpdate={updateCurrentDate}
-      />
-        <FullCalendar
-          ref={calendarRef}
-          plugins={[dayGridPlugin, interactionPlugin]}
-          initialView="dayGridMonth"
-          headerToolbar={false} // We're using custom toolbar
-          events={calendarEvents}
-          dateClick={handleDateClick}
-          eventClick={handleEventClick}
-          height="auto"
-          editable={false}
-          selectable={false}
-          dayMaxEvents={true}
-          moreLinkClick="popover"
-          displayEventTime={false}
+      <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+        <CalendarToolbar 
+          calendarRef={calendarRef} 
+          currentDate={currentDate}
+          onAddEvent={handleAddEvent}
+          onDateUpdate={updateCurrentDate}
         />
+        {events.length === 0 && !loading ? (
+          <div className="flex flex-col items-center justify-center py-12 border-t border-gray-200">
+            <svg
+              className="w-16 h-16 text-gray-400 mb-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+            <h3 className="text-lg font-semibold text-gray-700 mb-2">No events yet</h3>
+            <p className="text-gray-500 text-center mb-4">
+              Click on a date or use the "Add Event" button to create your first event.
+            </p>
+          </div>
+        ) : (
+          <FullCalendar
+            ref={calendarRef}
+            plugins={[dayGridPlugin, interactionPlugin]}
+            initialView="dayGridMonth"
+            headerToolbar={false} // We're using custom toolbar
+            events={calendarEvents}
+            dateClick={handleDateClick}
+            eventClick={handleEventClick}
+            height="auto"
+            editable={false}
+            selectable={false}
+            dayMaxEvents={true}
+            moreLinkClick="popover"
+            displayEventTime={false}
+          />
+        )}
       </div>
       
       {/* Event Form Modal */}
@@ -166,6 +219,7 @@ const CalendarView = () => {
         onClose={closeModal}
         createEvent={createEvent}
         updateEvent={updateEvent}
+        deleteEvent={deleteEvent}
       />
     </>
   );

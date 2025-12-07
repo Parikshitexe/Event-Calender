@@ -51,34 +51,38 @@ const CalendarToolbar = ({ calendarRef, currentDate, onAddEvent, onDateUpdate })
   };
 
   return (
-    <div className="flex items-center justify-between mb-4">
-      <div className="flex items-center gap-2">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+      <div className="flex flex-wrap items-center gap-2">
         <button
           onClick={handlePrev}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium"
+          className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium text-sm"
+          aria-label="Previous month"
         >
           Prev
         </button>
         <button
           onClick={handleToday}
-          className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors font-medium"
+          className="px-3 sm:px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors font-medium text-sm"
+          aria-label="Go to today"
         >
           Today
         </button>
         <button
           onClick={handleNext}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium"
+          className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium text-sm"
+          aria-label="Next month"
         >
           Next
         </button>
-        <span className="ml-4 text-lg font-semibold text-gray-700">
+        <span className="ml-2 sm:ml-4 text-base sm:text-lg font-semibold text-gray-700">
           {currentDate || ''}
         </span>
       </div>
       <div>
         <button
           onClick={onAddEvent}
-          className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors font-medium"
+          className="w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors font-medium text-sm"
+          aria-label="Add new event"
         >
           Add Event
         </button>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { validateEventForm } from '../../utils/validation';
 import { toUTCString, getStartOfDayUTC, getEndOfDayUTC } from '../../utils/dateHelpers';
 import EventFormFields from './EventFormFields';
+import ConfirmDialog from '../common/ConfirmDialog';
 
 /**
  * Event form modal component
@@ -14,8 +15,9 @@ import EventFormFields from './EventFormFields';
  * @param {Function} props.onClose - Callback to close modal
  * @param {Function} props.createEvent - Function to create event
  * @param {Function} props.updateEvent - Function to update event
+ * @param {Function} props.deleteEvent - Function to delete event
  */
-const EventFormModal = ({ isOpen, mode, eventData, selectedDate, onClose, createEvent, updateEvent }) => {
+const EventFormModal = ({ isOpen, mode, eventData, selectedDate, onClose, createEvent, updateEvent, deleteEvent }) => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -25,6 +27,8 @@ const EventFormModal = ({ isOpen, mode, eventData, selectedDate, onClose, create
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   /**
    * Check if the start date is in the past
@@ -137,9 +141,44 @@ const EventFormModal = ({ isOpen, mode, eventData, selectedDate, onClose, create
    * Handle modal close
    */
   const handleClose = () => {
-    if (!isSubmitting) {
+    if (!isSubmitting && !isDeleting) {
       onClose();
     }
+  };
+
+  /**
+   * Handle delete button click - show confirmation dialog
+   */
+  const handleDeleteClick = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  /**
+   * Handle delete confirmation
+   */
+  const handleDeleteConfirm = async () => {
+    if (!eventData || !eventData._id) return;
+
+    setIsDeleting(true);
+    setShowDeleteConfirm(false);
+
+    try {
+      await deleteEvent(eventData._id);
+      // Close modal on success
+      onClose();
+    } catch (error) {
+      // Error is already handled by useEvents hook (toast notification)
+      console.error('Error deleting event:', error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  /**
+   * Handle delete cancellation
+   */
+  const handleDeleteCancel = () => {
+    setShowDeleteConfirm(false);
   };
 
   // Don't render if modal is closed
@@ -214,26 +253,53 @@ const EventFormModal = ({ isOpen, mode, eventData, selectedDate, onClose, create
             />
 
             {/* Buttons */}
-            <div className="flex justify-end gap-3 mt-6">
-              <button
-                type="button"
-                onClick={handleClose}
-                disabled={isSubmitting}
-                className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? 'Saving...' : mode === 'create' ? 'Create' : 'Update'}
-              </button>
+            <div className="flex justify-between items-center mt-6">
+              {/* Delete button - only show in edit mode */}
+              {mode === 'edit' && (
+                <button
+                  type="button"
+                  onClick={handleDeleteClick}
+                  disabled={isSubmitting || isDeleting}
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Delete
+                </button>
+              )}
+              {mode === 'create' && <div></div>}
+              
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={handleClose}
+                  disabled={isSubmitting || isDeleting}
+                  className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting || isDeleting}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? 'Saving...' : mode === 'create' ? 'Create' : 'Update'}
+                </button>
+              </div>
             </div>
           </form>
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        title="Delete Event"
+        message={`Are you sure you want to delete "${eventData?.title || 'this event'}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+        isDestructive={true}
+      />
     </div>
   );
 };
